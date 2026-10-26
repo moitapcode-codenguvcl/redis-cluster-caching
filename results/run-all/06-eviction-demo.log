@@ -1,0 +1,40 @@
+
+Redis Cluster Eviction Policy Demo (LRU vs LFU)
+============================================================
+[OK] Connected to Redis Cluster (attempt 1)
+
+============================================================
+  Target node 172.18.0.3:6379
+============================================================
+  Original config : maxmemory=0  maxmemory-policy=noeviction
+
+============================================================
+  Policy: allkeys-lru
+============================================================
+
+  [allkeys-lru] baseline used_memory=2907 KiB  -> maxmemory=4955 KiB
+  [allkeys-lru] hot key read 500x, now idle for 3s ...
+  [allkeys-lru] wrote 4000 filler keys -> evicted 3224 keys, 752 fillers remain, used_memory=4948 KiB
+
+============================================================
+  Policy: allkeys-lfu
+============================================================
+
+  [allkeys-lfu] baseline used_memory=3900 KiB  -> maxmemory=5948 KiB
+  [allkeys-lfu] hot key read 500x, now idle for 3s ...
+  [allkeys-lfu] wrote 4000 filler keys -> evicted 2514 keys, 1486 fillers remain, used_memory=5961 KiB
+
+[RESET] Config restored: maxmemory=0  maxmemory-policy=noeviction
+[RESET] Demo keys deleted.
+
+============================================================
+  RESULT
+============================================================
+  policy         hot key     evicted  fillers kept
+  allkeys-lru    EVICTED        3224           752   
+  allkeys-lfu    KEPT           2514          1486   access counter=14
+
+  allkeys-lru drops the idle hot key (only recency counts);
+  allkeys-lfu keeps it (it was read often).
+  Result: PASS
+

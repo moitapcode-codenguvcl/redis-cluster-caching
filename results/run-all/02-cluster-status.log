@@ -1,0 +1,48 @@
+
+──────────────────────────────────────────────────────────────
+  CLUSTER INFO  (from redis-1)
+──────────────────────────────────────────────────────────────
+cluster_state:ok
+cluster_slots_assigned:16384
+cluster_slots_ok:16384
+cluster_slots_pfail:0
+cluster_slots_fail:0
+cluster_known_nodes:6
+cluster_size:3
+cluster_current_epoch:6
+cluster_my_epoch:1
+cluster_stats_messages_ping_sent:11
+cluster_stats_messages_pong_sent:14
+cluster_stats_messages_sent:25
+cluster_stats_messages_ping_received:9
+cluster_stats_messages_pong_received:11
+cluster_stats_messages_meet_received:5
+cluster_stats_messages_received:25
+total_cluster_links_buffer_limit_exceeded:0
+
+──────────────────────────────────────────────────────────────
+  CLUSTER NODES  (id | addr | flags | master-id | slots)
+──────────────────────────────────────────────────────────────
+de0f15e70a4808370c6b38d4a13d3733a78dc6c0 172.18.0.4:6379@16379 master - 0 1792991303000 2 connected 5461-10922
+ed41b5f52a37e1e81064a01bc360287faf087309 172.18.0.3:6379@16379 myself,master - 0 0 1 connected 0-5460
+cbed11298be5821862f678dbc79e779940e8e8e6 172.18.0.5:6379@16379 slave de0f15e70a4808370c6b38d4a13d3733a78dc6c0 0 1792991302000 2 connected
+7a705e41d97cf948408c1b627a3e34deeb14bab1 172.18.0.6:6379@16379 slave 035dc3274107ba89cf7f1e3327b77636ca11bceb 0 1792991302830 3 connected
+035dc3274107ba89cf7f1e3327b77636ca11bceb 172.18.0.2:6379@16379 master - 0 1792991303534 3 connected 10923-16383
+14a4d6a27a3e17cdf0fa2335fdc7acfcde033256 172.18.0.7:6379@16379 slave ed41b5f52a37e1e81064a01bc360287faf087309 0 1792991303534 1 connected
+
+──────────────────────────────────────────────────────────────
+  HASH SLOT DISTRIBUTION  (master nodes only)
+──────────────────────────────────────────────────────────────
+  172.18.0.4            Slots: 5461-10922
+  172.18.0.3            Slots: 0-5460
+  172.18.0.2            Slots: 10923-16383
+
+──────────────────────────────────────────────────────────────
+  SUMMARY
+──────────────────────────────────────────────────────────────
+  Masters  : 3
+  Replicas : 3
+  Slots assigned : 16384 / 16384
+  cluster_state:ok
+──────────────────────────────────────────────────────────────
+

@@ -1,0 +1,129 @@
+
+────────────────────────────────────────────────────────────────────────
+  PRE-FLIGHT CHECK
+────────────────────────────────────────────────────────────────────────
+  Cluster state is OK.
+
+────────────────────────────────────────────────────────────────────────
+  STEP 1 – Start failover_client.py in the background
+────────────────────────────────────────────────────────────────────────
+  Started failover_client.py (PID: 6937, log: /tmp/failover_client.G8sQNQ.log)
+  Letting client write & read for 3 seconds...
+
+  Recent client output (before failover):
+    [05:08:30.858] [OK]    node=172.18.0.2:6379    write=10 read=10
+    [05:08:31.058] [OK]    node=172.18.0.2:6379    write=11 read=11
+    [05:08:31.258] [OK]    node=172.18.0.2:6379    write=12 read=12
+    [05:08:31.457] [OK]    node=172.18.0.2:6379    write=13 read=13
+    [05:08:31.658] [OK]    node=172.18.0.2:6379    write=14 read=14
+    [05:08:31.858] [OK]    node=172.18.0.2:6379    write=15 read=15
+
+────────────────────────────────────────────────────────────────────────
+  STEP 2 – Identify target master node
+────────────────────────────────────────────────────────────────────────
+  Key 'counter:failover' hashes to slot : 13755
+  Current master for slot 13755         : redis-3 (172.18.0.2:6379)
+  Its designated replica                : redis-4 (172.18.0.6:6379)
+  Observer node for cluster commands    : redis-1
+
+────────────────────────────────────────────────────────────────────────
+  STEP 3 – Cluster nodes BEFORE stopping redis-3
+────────────────────────────────────────────────────────────────────────
+  de0f15e70a4808370c6b38d4a13d3733a78dc6c0 172.18.0.4:6379@16379 master - 0 1792991311000 2 connected 5461-10922
+  ed41b5f52a37e1e81064a01bc360287faf087309 172.18.0.3:6379@16379 myself,master - 0 0 1 connected 0-5460
+  cbed11298be5821862f678dbc79e779940e8e8e6 172.18.0.5:6379@16379 slave de0f15e70a4808370c6b38d4a13d3733a78dc6c0 0 1792991311000 2 connected
+  7a705e41d97cf948408c1b627a3e34deeb14bab1 172.18.0.6:6379@16379 slave 035dc3274107ba89cf7f1e3327b77636ca11bceb 0 1792991312000 3 connected
+  035dc3274107ba89cf7f1e3327b77636ca11bceb 172.18.0.2:6379@16379 master - 0 1792991311096 3 connected 10923-16383
+  14a4d6a27a3e17cdf0fa2335fdc7acfcde033256 172.18.0.7:6379@16379 slave ed41b5f52a37e1e81064a01bc360287faf087309 0 1792991312608 1 connected
+
+────────────────────────────────────────────────────────────────────────
+  STEP 4 – Stopping master container: redis-3 (172.18.0.2)
+────────────────────────────────────────────────────────────────────────
+  [05:08:33] 'redis-3' stopped.
+  Waiting for cluster to detect failure (cluster-node-timeout = 5000 ms)
+  and promote replica redis-4 (172.18.0.6)...
+    t+1s: cluster_state:ok | slot 13755 master = 172.18.0.2
+    t+2s: cluster_state:ok | slot 13755 master = 172.18.0.2
+    t+3s: cluster_state:ok | slot 13755 master = 172.18.0.2
+    t+4s: cluster_state:ok | slot 13755 master = 172.18.0.2
+    t+5s: cluster_state:ok | slot 13755 master = 172.18.0.2
+    t+6s: cluster_state:ok | slot 13755 master = 172.18.0.2
+    t+7s: cluster_state:fail | slot 13755 master = none
+    t+8s: cluster_state:ok | slot 13755 master = 172.18.0.6
+
+  ==> Replica promoted! New master for slot 13755 is redis-4 (172.18.0.6:6379) after ~10.0s.
+
+────────────────────────────────────────────────────────────────────────
+  STEP 5 – Cluster nodes AFTER replica promotion (redis-3 still down)
+────────────────────────────────────────────────────────────────────────
+  de0f15e70a4808370c6b38d4a13d3733a78dc6c0 172.18.0.4:6379@16379 master - 0 1792991322592 2 connected 5461-10922
+  ed41b5f52a37e1e81064a01bc360287faf087309 172.18.0.3:6379@16379 myself,master - 0 0 1 connected 0-5460
+  cbed11298be5821862f678dbc79e779940e8e8e6 172.18.0.5:6379@16379 slave de0f15e70a4808370c6b38d4a13d3733a78dc6c0 0 1792991322692 2 connected
+  7a705e41d97cf948408c1b627a3e34deeb14bab1 172.18.0.6:6379@16379 master - 0 1792991321000 7 connected 10923-16383
+  035dc3274107ba89cf7f1e3327b77636ca11bceb 172.18.0.2:6379@16379 master,fail - 1792991315532 1792991313000 3 connected
+  14a4d6a27a3e17cdf0fa2335fdc7acfcde033256 172.18.0.7:6379@16379 slave ed41b5f52a37e1e81064a01bc360287faf087309 0 1792991322000 1 connected
+
+  Letting client write to the new master (redis-4) for 3 seconds...
+
+  Recent client output (writing to promoted master):
+    [05:08:44.797] [OK]    node=172.18.0.6:6379    write=34 read=34
+    [05:08:44.998] [OK]    node=172.18.0.6:6379    write=35 read=35
+    [05:08:45.201] [OK]    node=172.18.0.6:6379    write=36 read=36
+    [05:08:45.398] [OK]    node=172.18.0.6:6379    write=37 read=37
+    [05:08:45.598] [OK]    node=172.18.0.6:6379    write=38 read=38
+    [05:08:45.799] [OK]    node=172.18.0.6:6379    write=39 read=39
+
+────────────────────────────────────────────────────────────────────────
+  STEP 6 – Restarting redis-3 and waiting for it to rejoin as replica
+────────────────────────────────────────────────────────────────────────
+  [05:08:45] 'redis-3' started.
+    t+1s: redis-3 (172.18.0.2) flags = slave
+
+────────────────────────────────────────────────────────────────────────
+  STEP 7 – Cluster nodes AFTER redis-3 rejoined
+────────────────────────────────────────────────────────────────────────
+  de0f15e70a4808370c6b38d4a13d3733a78dc6c0 172.18.0.4:6379@16379 master - 0 1792991326726 2 connected 5461-10922
+  ed41b5f52a37e1e81064a01bc360287faf087309 172.18.0.3:6379@16379 myself,master - 0 0 1 connected 0-5460
+  cbed11298be5821862f678dbc79e779940e8e8e6 172.18.0.5:6379@16379 slave de0f15e70a4808370c6b38d4a13d3733a78dc6c0 0 1792991326000 2 connected
+  7a705e41d97cf948408c1b627a3e34deeb14bab1 172.18.0.6:6379@16379 master - 0 1792991326523 7 connected 10923-16383
+  035dc3274107ba89cf7f1e3327b77636ca11bceb 172.18.0.2:6379@16379 slave 7a705e41d97cf948408c1b627a3e34deeb14bab1 0 1792991326567 7 connected
+  14a4d6a27a3e17cdf0fa2335fdc7acfcde033256 172.18.0.7:6379@16379 slave ed41b5f52a37e1e81064a01bc360287faf087309 0 1792991325000 1 connected
+
+────────────────────────────────────────────────────────────────────────
+  STEP 8 – Stopping client and analysing results
+────────────────────────────────────────────────────────────────────────
+  Sample client log around failover window:
+    [05:08:32.458] [OK]    node=172.18.0.2:6379    write=18 read=18
+    [05:08:32.658] [OK]    node=172.18.0.2:6379    write=19 read=19
+    [05:08:33.122] [ERROR] node=172.18.0.2:6379    ConnectionError: Connection closed by server.
+    [05:08:33.135] [ERROR] node=172.18.0.2:6379    ConnectionError: Error 111 connecting to 172.18.0.2:6379. Connection refused.
+    [05:08:33.839] [ERROR] node=172.18.0.2:6379    TimeoutError: Timeout connecting to server
+    [05:08:34.353] [ERROR] node=172.18.0.2:6379    TimeoutError: Timeout connecting to server
+    [05:08:34.871] [ERROR] node=172.18.0.2:6379    TimeoutError: Timeout connecting to server
+    [05:08:35.392] [ERROR] node=172.18.0.2:6379    TimeoutError: Timeout connecting to server
+    [05:08:39.917] [ERROR] node=172.18.0.2:6379    TimeoutError: Timeout connecting to server
+    [05:08:40.433] [ERROR] node=172.18.0.2:6379    TimeoutError: Timeout connecting to server
+    [05:08:40.948] [ERROR] node=172.18.0.2:6379    TimeoutError: Timeout connecting to server
+    [05:08:41.461] [ERROR] node=172.18.0.2:6379    TimeoutError: Timeout connecting to server
+    [05:08:41.981] [ERROR] node=172.18.0.2:6379    TimeoutError: Timeout connecting to server
+    [05:08:41.996] [OK]    node=172.18.0.6:6379    write=20 read=20
+    [05:08:42.197] [OK]    node=172.18.0.6:6379    write=21 read=21
+
+────────────────────────────────────────────────────────────────────────
+  FAILOVER SUMMARY
+────────────────────────────────────────────────────────────────────────
+  Hash slot for key            : 13755 (key: counter:failover)
+  Old master (stopped)         : redis-3 (172.18.0.2:6379)
+  New master (promoted)        : redis-4 (172.18.0.6:6379)
+  Old master rejoined as       : replica (slave of redis-4)
+  Client downtime              : 8.87 s (from 05:08:33.122 to 05:08:41.996)
+  Total client operations      : 56 (OK: 45, ERROR: 11)
+  Final counter value          : 45
+  Data lost?                   : No (0 acknowledged writes lost; 45 OK writes == final counter 45)
+────────────────────────────────────────────────────────────────────────
+
+────────────────────────────────────────────────────────────────────────
+  CLEANUP & CLUSTER HEALTH RESTORATION
+────────────────────────────────────────────────────────────────────────
+  [OK] Verified cluster_state:ok on all nodes.
+────────────────────────────────────────────────────────────────────────

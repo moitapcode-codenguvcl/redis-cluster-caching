@@ -1,0 +1,195 @@
+services:
+
+  # ── Redis cluster nodes ─────────────────────────────────────────────────────
+  # Each node starts in cluster mode.  Data is persisted in a named volume.
+  # Ports are NOT published to the host; all traffic stays on redis-net.
+
+  redis-1:
+    image: redis:7
+    container_name: redis-1
+    command: >
+      redis-server
+      --cluster-enabled yes
+      --cluster-config-file nodes.conf
+      --cluster-node-timeout 5000
+      --appendonly yes
+      --bind 0.0.0.0
+    volumes:
+      - redis-1-data:/data
+    networks:
+      - redis-net
+    restart: unless-stopped
+
+  redis-2:
+    image: redis:7
+    container_name: redis-2
+    command: >
+      redis-server
+      --cluster-enabled yes
+      --cluster-config-file nodes.conf
+      --cluster-node-timeout 5000
+      --appendonly yes
+      --bind 0.0.0.0
+    volumes:
+      - redis-2-data:/data
+    networks:
+      - redis-net
+    restart: unless-stopped
+
+  redis-3:
+    image: redis:7
+    container_name: redis-3
+    command: >
+      redis-server
+      --cluster-enabled yes
+      --cluster-config-file nodes.conf
+      --cluster-node-timeout 5000
+      --appendonly yes
+      --bind 0.0.0.0
+    volumes:
+      - redis-3-data:/data
+    networks:
+      - redis-net
+    restart: unless-stopped
+
+  redis-4:
+    image: redis:7
+    container_name: redis-4
+    command: >
+      redis-server
+      --cluster-enabled yes
+      --cluster-config-file nodes.conf
+      --cluster-node-timeout 5000
+      --appendonly yes
+      --bind 0.0.0.0
+    volumes:
+      - redis-4-data:/data
+    networks:
+      - redis-net
+    restart: unless-stopped
+
+  redis-5:
+    image: redis:7
+    container_name: redis-5
+    command: >
+      redis-server
+      --cluster-enabled yes
+      --cluster-config-file nodes.conf
+      --cluster-node-timeout 5000
+      --appendonly yes
+      --bind 0.0.0.0
+    volumes:
+      - redis-5-data:/data
+    networks:
+      - redis-net
+    restart: unless-stopped
+
+  redis-6:
+    image: redis:7
+    container_name: redis-6
+    command: >
+      redis-server
+      --cluster-enabled yes
+      --cluster-config-file nodes.conf
+      --cluster-node-timeout 5000
+      --appendonly yes
+      --bind 0.0.0.0
+    volumes:
+      - redis-6-data:/data
+    networks:
+      - redis-net
+    restart: unless-stopped
+
+  # ── One-shot cluster initialiser ────────────────────────────────────────────
+  # Waits until every node responds to PING, then calls redis-cli --cluster
+  # create.  The --cluster-yes flag makes it non-interactive.
+  # Safely re-runnable: if the cluster already exists the create command
+  # returns a non-zero exit code which we absorb; the script checks
+  # cluster_state:ok before exiting successfully.
+
+  cluster-init:
+    image: redis:7
+    container_name: cluster-init
+    depends_on:
+      - redis-1
+      - redis-2
+      - redis-3
+      - redis-4
+      - redis-5
+      - redis-6
+    networks:
+      - redis-net
+    restart: "no"
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        set -e
+
+        NODES="redis-1:6379 redis-2:6379 redis-3:6379 redis-4:6379 redis-5:6379 redis-6:6379"
+
+        echo "==> Waiting for all 6 Redis nodes to be ready..."
+        for node in $$NODES; do
+          host=$${node%:*}
+          port=$${node#*:}
+          until redis-cli -h "$$host" -p "$$port" ping 2>/dev/null | grep -q PONG; do
+            echo "    $$host:$$port not ready, retrying in 2s..."
+            sleep 2
+          done
+          echo "    $$host:$$port is UP"
+        done
+
+        echo "==> All nodes ready. Checking if cluster already exists..."
+        STATE=$(redis-cli -h redis-1 -p 6379 cluster info | grep cluster_state | tr -d '[:space:]')
+        if [ "$$STATE" = "cluster_state:ok" ]; then
+          echo "==> Cluster already initialised (cluster_state:ok). Nothing to do."
+          exit 0
+        fi
+
+        echo "==> Creating Redis Cluster (3 masters + 3 replicas)..."
+        redis-cli --cluster create \
+          redis-1:6379 \
+          redis-2:6379 \
+          redis-3:6379 \
+          redis-4:6379 \
+          redis-5:6379 \
+          redis-6:6379 \
+          --cluster-replicas 1 \
+          --cluster-yes
+
+        echo "==> Cluster creation complete."
+
+  # ── Demo application ─────────────────────────────────────────────────────────
+  # Built from app/Dockerfile (python:3.12-slim + redis-py cluster).
+  # Stays alive with "sleep infinity" so we can run scripts via exec.
+  # Depends on cluster-init having completed successfully.
+
+  app:
+    build:
+      context: ./app
+      dockerfile: Dockerfile
+    container_name: app
+    depends_on:
+      - cluster-init
+      - redis-1
+      - redis-2
+      - redis-3
+      - redis-4
+      - redis-5
+      - redis-6
+    networks:
+      - redis-net
+    restart: unless-stopped
+
+# ── Named volumes (one per node) ───────────────────────────────────────────────
+volumes:
+  redis-1-data:
+  redis-2-data:
+  redis-3-data:
+  redis-4-data:
+  redis-5-data:
+  redis-6-data:
+
+# ── User-defined bridge network ─────────────────────────────────────────────
+networks:
+  redis-net:
+    driver: bridge

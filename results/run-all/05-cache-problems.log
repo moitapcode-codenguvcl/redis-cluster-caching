@@ -1,0 +1,60 @@
+
+Redis Cluster Cache Problems Demo
+============================================================
+[OK] Connected to Redis Cluster (attempt 1)
+
+============================================================
+  1. CACHE STAMPEDE  (hot key expires, many threads miss at once)
+============================================================
+  50 threads request the same key on an empty cache.
+  Each DB query takes 300 ms.
+
+  [PROBLEM: no protection  ] 50 threads -> DB calls:  50   wall time: 0.35s   errors: 0
+  [FIXED:   SET NX lock    ] 50 threads -> DB calls:   1   wall time: 0.34s   errors: 0
+
+  DB calls                 problem=50    fixed=1    (50.0x fewer)
+  Result: PASS – only one thread rebuilt the cache
+
+============================================================
+  2. CACHE AVALANCHE  (many keys expire at the same time)
+============================================================
+  200 keys cached with a base TTL of 60s.
+
+  [PROBLEM: identical TTL    ]  200 keys written in 0.03s
+    expire in  60-64 s | ######################################## 200
+    TTL range: 60s .. 60s   spread: 0s
+
+  [FIXED:   TTL + jitter 0-30s]  200 keys written in 0.02s
+    expire in  60-64 s | #######                                   34
+    expire in  65-69 s | ######                                    28
+    expire in  70-74 s | ######                                    28
+    expire in  75-79 s | #######                                   32
+    expire in  80-84 s | #######                                   35
+    expire in  85-89 s | ########                                  36
+    expire in  90-94 s | ##                                         7
+    TTL range: 60s .. 90s   spread: 30s
+
+  Max keys expiring/sec    problem=200    fixed=12    (16.7x fewer)
+  Share of cache lost in the busiest second: 100% -> 6%
+  Result: PASS – expiries are spread out, no mass expiry
+
+============================================================
+  3. CACHE PENETRATION  (requests for ids that do not exist)
+============================================================
+  100 requests for 10 non-existent ids (10 requests each).
+
+  [PROBLEM: no null caching] 100 requests -> DB calls: 100   wall time: 5.11s   rows found: 0
+  [FIXED:   null marker     ] 100 requests -> DB calls:  10   wall time: 0.56s   rows found: 0
+
+  Null marker example: GET cp:item:900001 -> '__NULL__'  (TTL 30s)
+
+  DB calls                 problem=100    fixed=10    (10.0x fewer)
+  Result: PASS – only the first request per id hit the DB
+
+============================================================
+  SUMMARY
+============================================================
+  stampede     PASS
+  avalanche    PASS
+  penetration  PASS
+

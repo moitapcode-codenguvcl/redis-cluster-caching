@@ -1,0 +1,21 @@
+
+──────────────────────────────────────────────────────────────
+  REDIS BENCHMARK  (cluster mode, network: redis-cluster-caching_redis-net)
+──────────────────────────────────────────────────────────────
+  Tests    : SET, GET
+  Requests : 100000
+  Clients  : 50
+  Keyspace : 100000 random keys
+
+==> Running redis-benchmark (this takes a few seconds)...
+==> Removing benchmark keys (key:*) from every master...
+
+──────────────────────────────────────────────────────────────
+  SUMMARY
+──────────────────────────────────────────────────────────────
+  SET      199203.20 requests/sec  (0.50 s)
+  GET      199600.80 requests/sec  (0.50 s)
+
+  Full output saved to: results/benchmark.txt
+──────────────────────────────────────────────────────────────
+

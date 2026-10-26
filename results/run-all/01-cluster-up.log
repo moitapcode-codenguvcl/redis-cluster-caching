@@ -1,0 +1,120 @@
+ Image redis-cluster-caching-app Building 
+#1 [internal] load local bake definitions
+#1 reading from stdin 560B done
+#1 DONE 0.0s
+
+#2 [internal] load build definition from Dockerfile
+#2 transferring dockerfile: 512B done
+#2 DONE 0.0s
+
+#3 [internal] load metadata for docker.io/library/python:3.12-slim
+#3 DONE 0.1s
+
+#4 [internal] load .dockerignore
+#4 transferring context: 2B done
+#4 DONE 0.0s
+
+#5 [internal] load build context
+#5 transferring context: 211B done
+#5 DONE 0.0s
+
+#6 [1/6] FROM docker.io/library/python:3.12-slim@sha256:a0f57064cbdcd6285fa45f51237ab0b35ea8ebaed06a1f5973e89e19dfb86704
+#6 resolve docker.io/library/python:3.12-slim@sha256:a0f57064cbdcd6285fa45f51237ab0b35ea8ebaed06a1f5973e89e19dfb86704 0.0s done
+#6 DONE 0.0s
+
+#7 [2/6] WORKDIR /app
+#7 CACHED
+
+#8 [3/6] RUN apt-get update && apt-get install -y --no-install-recommends procps     && rm -rf /var/lib/apt/lists/*
+#8 CACHED
+
+#9 [4/6] COPY requirements.txt .
+#9 CACHED
+
+#10 [5/6] RUN pip install --no-cache-dir -r requirements.txt
+#10 CACHED
+
+#11 [6/6] COPY . .
+#11 CACHED
+
+#12 exporting to image
+#12 exporting layers done
+#12 exporting manifest sha256:e8a198197f929846fa4486d60a118083d0bffa9b6fa17897e48164cc56233924 done
+#12 exporting config sha256:e80356282fcadf7349f54e826e6e8ef49bd9bae01a000c705c8302f8c7758138 done
+#12 exporting attestation manifest sha256:19bad8cfef9a35c739c82b3a88f0b60adf03ab16c04cf1d3b25a625680a82126 done
+#12 exporting manifest list sha256:962fa62f89773d3069f5bc6b6e77c89f1ae83795929dbc5144a53dbadcd7ec9f done
+#12 naming to docker.io/library/redis-cluster-caching-app:latest done
+#12 unpacking to docker.io/library/redis-cluster-caching-app:latest done
+#12 DONE 0.0s
+
+#13 resolving provenance for metadata file
+#13 DONE 0.0s
+ Image redis-cluster-caching-app Built 
+==> Starting Redis Cluster containers...
+ Volume redis-cluster-caching_redis-2-data Creating 
+ Volume redis-cluster-caching_redis-6-data Creating 
+ Volume redis-cluster-caching_redis-2-data Creating 
+ Network redis-cluster-caching_redis-net Creating 
+ Volume redis-cluster-caching_redis-3-data Creating 
+ Volume redis-cluster-caching_redis-3-data Creating 
+ Network redis-cluster-caching_redis-net Creating 
+ Volume redis-cluster-caching_redis-4-data Creating 
+ Volume redis-cluster-caching_redis-4-data Creating 
+ Volume redis-cluster-caching_redis-1-data Creating 
+ Volume redis-cluster-caching_redis-1-data Creating 
+ Volume redis-cluster-caching_redis-5-data Creating 
+ Volume redis-cluster-caching_redis-5-data Creating 
+ Volume redis-cluster-caching_redis-6-data Creating 
+ Volume redis-cluster-caching_redis-4-data Created 
+ Volume redis-cluster-caching_redis-4-data Created 
+ Volume redis-cluster-caching_redis-2-data Created 
+ Volume redis-cluster-caching_redis-2-data Created 
+ Volume redis-cluster-caching_redis-1-data Created 
+ Volume redis-cluster-caching_redis-1-data Created 
+ Volume redis-cluster-caching_redis-5-data Created 
+ Volume redis-cluster-caching_redis-5-data Created 
+ Volume redis-cluster-caching_redis-6-data Created 
+ Volume redis-cluster-caching_redis-6-data Created 
+ Volume redis-cluster-caching_redis-3-data Created 
+ Volume redis-cluster-caching_redis-3-data Created 
+ Network redis-cluster-caching_redis-net Created 
+ Network redis-cluster-caching_redis-net Created 
+ Container redis-3 Creating 
+ Container redis-4 Creating 
+ Container redis-6 Creating 
+ Container redis-5 Creating 
+ Container redis-2 Creating 
+ Container redis-1 Creating 
+ Container redis-2 Created 
+ Container redis-4 Created 
+ Container redis-3 Created 
+ Container redis-5 Created 
+ Container redis-6 Created 
+ Container redis-1 Created 
+ Container cluster-init Creating 
+ Container cluster-init Created 
+ Container app Creating 
+ Container app Created 
+ Container redis-3 Starting 
+ Container redis-1 Starting 
+ Container redis-2 Starting 
+ Container redis-6 Starting 
+ Container redis-4 Starting 
+ Container redis-5 Starting 
+ Container redis-3 Started 
+ Container redis-1 Started 
+ Container redis-2 Started 
+ Container redis-6 Started 
+ Container redis-4 Started 
+ Container redis-5 Started 
+ Container cluster-init Starting 
+ Container cluster-init Started 
+ Container app Starting 
+ Container app Started 
+==> Waiting for cluster-init to finish...
+    cluster-init still running (attempt 1/60)...
+    cluster-init finished successfully.
+==> Waiting for cluster_state:ok on redis-1...
+    cluster_state:ok confirmed!
+
+==> Redis Cluster is UP and HEALTHY.
